@@ -220,28 +220,16 @@ export default class Bar {
         });
     }
 
-    update_bar_position({ x = null, width = null, y = null }) {
+    update_bar_position({ x = null, y = null, width = null }) {
         const bar = this.$bar;
         if (x) {
-            // get all x values of parent task
-            const xs = this.task.dependencies.map((dep) => {
-                return this.gantt.get_bar(dep).$bar.getX();
-            });
-            // child task must not go before parent
-            const valid_x = xs.reduce((prev, curr) => {
-                return prev && x >= curr;
-            }, true);
-            if (!valid_x) {
-                width = null;
-                return;
-            }
             this.update_attr(bar, 'x', x);
-        }
-        if (width && width >= this.handle_width * 2 + 3) {
-            this.update_attr(bar, 'width', width);
         }
         if (y) {
             this.update_attr(bar, 'y', y);
+        }
+        if (width && width >= this.handle_width * 2 + 3) {
+            this.update_attr(bar, 'width', width);
         }
         this.update_label_position();
         this.update_progressbar_position();
@@ -330,37 +318,26 @@ export default class Bar {
         );
     }
 
-    get_snap_position(dx) {
-        let odx = dx,
-            rem,
-            position;
-
-        if (this.gantt.view_is('Week')) {
-            rem = dx % (this.gantt.options.column_width / 7);
-            position =
-                odx -
-                rem +
-                (rem < this.gantt.options.column_width / 14
-                    ? 0
-                    : this.gantt.options.column_width / 7);
-        } else if (this.gantt.view_is('Month')) {
-            rem = dx % (this.gantt.options.column_width / 30);
-            position =
-                odx -
-                rem +
-                (rem < this.gantt.options.column_width / 60
-                    ? 0
-                    : this.gantt.options.column_width / 30);
-        } else {
-            rem = dx % this.gantt.options.column_width;
-            position =
-                odx -
-                rem +
-                (rem < this.gantt.options.column_width / 2
-                    ? 0
-                    : this.gantt.options.column_width);
+    get_snap_x(ox) {
+        const VIEW_MODE = this.gantt.constructor.VIEW_MODE;
+        let min_dx = this.gantt.options.column_width;
+        if (this.gantt.view_is(VIEW_MODE.WEEK)) {
+            min_dx = this.gantt.options.column_width / 7;
+        } else if (this.gantt.view_is(VIEW_MODE.MONTH)) {
+            min_dx = this.gantt.options.column_width / 30;
         }
-        return position;
+        return ox - (ox % min_dx);
+    }
+
+    get_snap_end_x(ox) {
+        const VIEW_MODE = this.gantt.constructor.VIEW_MODE;
+        let min_dx = this.gantt.options.column_width;
+        if (this.gantt.view_is(VIEW_MODE.WEEK)) {
+            min_dx = this.gantt.options.column_width / 7;
+        } else if (this.gantt.view_is(VIEW_MODE.MONTH)) {
+            min_dx = this.gantt.options.column_width / 30;
+        }
+        return ox - (ox % min_dx) + min_dx - 1;
     }
 
     update_attr(element, attr, value) {

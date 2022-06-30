@@ -1,13 +1,15 @@
-import { createSVG } from './svg_utils';
+import { $, createSVG } from './svg_utils';
 
 export default class Arrow {
     constructor(gantt, from_task, to_task) {
+        this.id = from_task.task.id + ',' + to_task.task.id;
         this.gantt = gantt;
         this.from_task = from_task;
         this.to_task = to_task;
 
         this.calculate_path();
         this.draw();
+        this.bind();
     }
 
     calculate_path() {
@@ -74,10 +76,26 @@ export default class Arrow {
     }
 
     draw() {
-        this.element = createSVG('path', {
-            d: this.path,
+        this.group = createSVG('g', {
+            class: 'arrow-wrapper',
             'data-from': this.from_task.task.id,
             'data-to': this.to_task.task.id,
+        });
+        this.element = createSVG('path', {
+            class: 'arrow-path',
+            d: this.path,
+            append_to: this.group,
+        });
+    }
+
+    bind() {
+        this.setup_active_event();
+    }
+
+    setup_active_event() {
+        $.on(this.group, 'focus click', (e) => {
+            this.gantt.unselect_all();
+            this.group.classList.add('active');
         });
     }
 
