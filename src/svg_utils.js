@@ -108,7 +108,7 @@ $.delegate = (element, event, selector, callback) => {
 };
 
 $.closest = (selector, element) => {
-    if (!element) return null;
+    if (!element || !element.matches) return null;
 
     if (element.matches(selector)) {
         return element;

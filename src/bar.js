@@ -171,7 +171,6 @@ export default class Bar {
     }
 
     bind() {
-        if (this.invalid) return;
         this.setup_click_event();
     }
 

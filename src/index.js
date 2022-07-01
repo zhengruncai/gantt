@@ -176,6 +176,7 @@ export default class Gantt {
         this.update_view_scale(mode);
         this.setup_dates();
         this.render();
+        this.set_scroll_position();
         // fire viewmode_change event
         this.trigger_event('view_change', [mode]);
     }
@@ -280,7 +281,6 @@ export default class Gantt {
         this.make_arrows();
         this.map_arrows_on_bars();
         this.set_width();
-        this.set_scroll_position();
     }
 
     setup_layers() {
@@ -622,6 +622,57 @@ export default class Gantt {
         }
     }
 
+    re_render() {
+        const old_gantt_start = this.gantt_start;
+        const old_scrollLeft = this.$svg.parentElement.scrollLeft;
+
+        this.setup_dates();
+        this.render();
+
+        const new_gantt_start = this.gantt_start;
+        const hour_diff = date_utils.diff(
+            old_gantt_start,
+            new_gantt_start,
+            'hour'
+        );
+        const scroll_diff =
+            (hour_diff / this.options.step) * this.options.column_width;
+
+        this.$svg.parentElement.scrollLeft = old_scrollLeft + scroll_diff;
+    }
+
+    remove_active_bars() {
+        this.hide_popup();
+        document.querySelectorAll('.bar-wrapper.active').forEach((bar) => {
+            const task_id = bar.getAttribute('data-id');
+            console.log('removing bar. id=%s', task_id);
+            const tasks = [];
+            let idx = 0;
+            this.tasks.forEach((task) => {
+                if (task.id === task_id) {
+                    return;
+                }
+                tasks.push(task);
+                task._index = idx++;
+                task.dependencies = task.dependencies.filter(
+                    (id) => id !== task_id
+                );
+            });
+            this.tasks = tasks;
+        });
+        this.setup_dependencies();
+        this.re_render();
+    }
+
+    remove_active_arrows() {
+        document.querySelectorAll('.arrow-wrapper.active').forEach((arrow) => {
+            const from_id = arrow.getAttribute('data-from');
+            const to_id = arrow.getAttribute('data-to');
+            console.log('removing arrow. from=%s, to=%s', from_id, to_id);
+            this.remove_arrow(from_id, to_id);
+        });
+    }
+
     remove_arrow(from_task_id, to_task_id) {
         const arrow_id = from_task_id + ',' + to_task_id;
         const arrows = [];
@@ -720,18 +771,14 @@ export default class Gantt {
     }
 
     bind_arrow_events() {
-        $.bind(document, 'keyup', (e) => {
+        $.bind(this.$svg, 'keyup', (e) => {
             if (['Backspace', 'Delete'].includes(e.key)) {
-                const arrow_active = $('.arrow-wrapper.active');
-                if (arrow_active) {
-                    const from_id = arrow_active.getAttribute('data-from');
-                    const to_id = arrow_active.getAttribute('data-to');
-                    console.log(
-                        'removing arrow. from=%s, to=%s',
-                        from_id,
-                        to_id
-                    );
-                    this.remove_arrow(from_id, to_id);
+                const $arrow_wrapper = $.closest(
+                    '.arrow-wrapper.active',
+                    e.target
+                );
+                if ($arrow_wrapper) {
+                    this.remove_active_arrows();
                 }
             }
         });
@@ -911,6 +958,7 @@ export default class Gantt {
                         y: $bar.finaly,
                     });
                 }
+                this.update_gantt_dates();
             }
 
             this.bar_being_dragged = null;
@@ -919,7 +967,40 @@ export default class Gantt {
             is_resizing_right = false;
         });
 
+        this.bind_bar_del_event();
         this.bind_bar_progress();
+    }
+
+    update_gantt_dates() {
+        let min_date = null;
+        let max_date = null;
+        this.tasks.forEach((task) => {
+            if (min_date === null || min_date > task._start) {
+                min_date = task._start;
+            }
+            if (max_date === null || max_date < task._end) {
+                max_date = task._end;
+            }
+        });
+        if (
+            date_utils.diff(min_date, this.gantt_start, 'hour') <=
+                this.options.step ||
+            date_utils.diff(this.gantt_end, max_date, 'hour') <=
+                this.options.step
+        ) {
+            this.re_render();
+        }
+    }
+
+    bind_bar_del_event() {
+        $.bind(this.$svg, 'keyup', (e) => {
+            if (['Backspace', 'Delete'].includes(e.key)) {
+                const $bar_wrapper = $.closest('.bar-wrapper.active', e.target);
+                if ($bar_wrapper) {
+                    this.remove_active_bars();
+                }
+            }
+        });
     }
 
     bind_bar_progress() {
