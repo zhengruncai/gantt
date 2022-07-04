@@ -28,56 +28,56 @@
 	<script>
 		var tasks = [
 			{
-				start: '2022-09-25',
-				end: '2022-11-08',
+				start: '2022-06-01',
+				end: '2022-06-08',
 				name: 'Redesign website',
 				id: "Task 0",
 				progress: 20,
 			},
 			{
-				start: '2022-10-03',
-				end: '2022-10-15',
+				start: '2022-06-03',
+				end: '2022-06-07',
 				name: 'Write new content',
 				id: "Task 1",
 				progress: 5,
 				dependencies: 'Task 0'
 			},
 			{
-				start: '2022-10-04',
-				end: '2022-11-08',
+				start: '2022-06-04',
+				end: '2022-06-08',
 				name: 'Apply new styles',
 				id: "Task 2",
 				progress: 10,
 				dependencies: 'Task 1'
 			},
-			// {
-			// 	start: '2022-10-08',
-			// 	end: '2022-11-09',
-			// 	name: 'Review',
-			// 	id: "Task 3",
-			// 	progress: 5,
-			// 	dependencies: 'Task 2'
-			// },
-			// {
-			// 	start: '2022-10-08',
-			// 	end: '2022-11-10',
-			// 	name: 'Deploy',
-			// 	id: "Task 4",
-			// 	progress: 0,
-			// 	dependencies: 'Task 3,Task 2'
-			// },
-			// {
-			// 	start: '2022-10-11',
-			// 	end: '2022-11-11',
-			// 	name: 'Go Live!',
-			// 	id: "Task 5",
-			// 	progress: 0,
-			// 	dependencies: 'Task 4',
-			// 	custom_class: 'bar-milestone'
-			// },
 			{
-				start: '2022-09-15',
-				end: '2022-12-10',
+				start: '2022-06-08',
+				end: '2022-06-14',
+				name: 'Review',
+				id: "Task 3",
+				progress: 5,
+				dependencies: 'Task 2'
+			},
+			{
+				start: '2022-06-10',
+				end: '2022-06-16',
+				name: 'Deploy',
+				id: "Task 4",
+				progress: 0,
+				dependencies: 'Task 3,Task 2'
+			},
+			{
+				start: '2022-06-13',
+				end: '2022-06-16',
+				name: 'Go Live!',
+				id: "Task 5",
+				progress: 0,
+				dependencies: 'Task 4',
+				custom_class: 'bar-milestone'
+			},
+			{
+				start: '2022-06-03',
+				end: '2022-06-20',
 				name: 'Long term task',
 				id: "Task 6",
 				invalid: true,
@@ -97,8 +97,9 @@
 			on_view_change: function(mode) {
 				console.log(mode);
 			},
-			view_mode: Gantt.VIEW_MODE.MONTH,
-			language: 'en'
+			view_mode: Gantt.VIEW_MODE.DAY,
+			language: 'en',
+			sortable: true,
 		});
 		console.log(gantt_chart);
 	</script>
