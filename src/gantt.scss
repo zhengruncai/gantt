@@ -49,7 +49,7 @@ $handle-color: #ddd !default;
     .arrow-wrapper {
         outline: none;
 
-        &:hover {
+        &:hover:not(.connecting) {
             .arrow-path {
                 filter: drop-shadow(0 0 2px black);
             }
@@ -59,6 +59,19 @@ $handle-color: #ddd !default;
             .arrow-path {
                 filter: drop-shadow(0 0 2px black);
             }
+        }
+
+        .end-circle-outer {
+            stroke-width: 1;
+            stroke: #888;
+            fill: #bbb;
+            opacity: 0.5;
+        }
+        .end-circle-inner {
+            stroke-width: 1;
+            stroke: #555;
+            fill: #fff;
+            opacity: 1;
         }
     }
 
@@ -103,6 +116,14 @@ $handle-color: #ddd !default;
         transition: opacity 0.3s ease;
     }
 
+    .bar-connector {
+        cursor: crosshair;
+        color: $handle-color;
+        opacity: 0;
+        fill-opacity: 0;
+        stroke-width: 1;
+    }
+
     .bar-wrapper {
         cursor: pointer;
         outline: none;
@@ -118,6 +139,10 @@ $handle-color: #ddd !default;
 
             .handle {
                 visibility: visible;
+                opacity: 1;
+            }
+
+            .bar-connector {
                 opacity: 1;
             }
         }

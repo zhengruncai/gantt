@@ -72,6 +72,7 @@ export default class Bar {
         this.draw_progress_bar();
         this.draw_label();
         this.draw_resize_handles();
+        this.draw_connector();
     }
 
     draw_bar() {
@@ -119,6 +120,18 @@ export default class Bar {
         });
         // labels get BBox in the next tick
         requestAnimationFrame(() => this.update_label_position());
+    }
+
+    draw_connector() {
+        if (this.invalid) return;
+        const bar = this.$bar;
+        this.$bar_connector = createSVG('circle', {
+            cx: bar.getX(),
+            cy: bar.getY() + (this.height * 5) / 4,
+            r: this.height / 4,
+            class: 'bar-connector',
+            append_to: this.group,
+        });
     }
 
     draw_resize_handles() {
@@ -389,6 +402,10 @@ export default class Bar {
         const handle = this.group.querySelector('.handle.progress');
         handle &&
             handle.setAttribute('points', this.get_progress_polygon_points());
+
+        const connector = this.group.querySelector('.bar-connector');
+        connector.setAttribute('cx', bar.getX());
+        connector.setAttribute('cy', bar.getY() + (this.height * 5) / 4);
     }
 
     update_arrow_position() {

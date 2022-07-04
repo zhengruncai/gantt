@@ -172,6 +172,13 @@ export default class Gantt {
         this.change_view_mode();
     }
 
+    refresh_arrows() {
+        this.layers.arrow.innerHTML = '';
+        this.setup_dependencies();
+        this.make_arrows();
+        this.map_arrows_on_bars();
+    }
+
     change_view_mode(mode = this.options.view_mode) {
         this.update_view_scale(mode);
         this.setup_dates();
@@ -598,7 +605,7 @@ export default class Gantt {
                 .map((task_id) => {
                     const dependency = this.get_task(task_id);
                     if (!dependency) return;
-                    const arrow = new Arrow(
+                    const arrow = Arrow.create_with_to_task(
                         this,
                         this.bars[dependency._index], // from_task
                         this.bars[task._index] // to_task
@@ -675,38 +682,16 @@ export default class Gantt {
 
     remove_arrow(from_task_id, to_task_id) {
         const arrow_id = from_task_id + ',' + to_task_id;
-        const arrows = [];
-        let arrow_to_remove = null;
-        this.arrows.forEach((arrow) => {
-            if (arrow.id === arrow_id) {
-                arrow_to_remove = arrow;
-            } else {
-                arrows.push(arrow);
-            }
-        });
-        this.arrows = arrows;
+        const arrow_to_remove = this.arrows.find(
+            (arrow) => arrow.id === arrow_id
+        );
 
         if (arrow_to_remove) {
-            arrow_to_remove.from_task.arrows =
-                arrow_to_remove.from_task.arrows.filter(
-                    (arrow) => arrow.id !== arrow_to_remove.id
-                );
-            this.dependency_map[from_task_id] =
-                this.dependency_map[from_task_id] || [];
-            this.dependency_map[from_task_id] = this.dependency_map[
-                from_task_id
-            ].filter((id) => id !== to_task_id);
-
-            arrow_to_remove.to_task.arrows =
-                arrow_to_remove.to_task.arrows.filter(
-                    (arrow) => arrow.id !== arrow_to_remove.id
-                );
             arrow_to_remove.to_task.task.dependencies =
                 arrow_to_remove.to_task.task.dependencies.filter(
                     (dep) => dep !== from_task_id
                 );
-
-            arrow_to_remove.group.remove();
+            this.refresh_arrows();
         }
     }
 
@@ -803,42 +788,51 @@ export default class Gantt {
             return is_dragging || is_resizing_left || is_resizing_right;
         }
 
-        $.on(this.$svg, 'mousedown', '.bar-wrapper, .handle', (e, element) => {
-            const bar_wrapper = $.closest('.bar-wrapper', element);
+        $.on(
+            this.$svg,
+            'mousedown',
+            '.bar-wrapper, .handle, .bar-connector',
+            (e, element) => {
+                const bar_wrapper = $.closest('.bar-wrapper', element);
 
-            if (element.classList.contains('left')) {
-                is_resizing_left = true;
-            } else if (element.classList.contains('right')) {
-                is_resizing_right = true;
-            } else if (element.classList.contains('bar-wrapper')) {
-                is_dragging = true;
-            }
-
-            bar_wrapper.classList.add('active');
-
-            x_on_start = e.offsetX;
-            y_on_start = e.offsetY;
-
-            parent_bar_id = bar_wrapper.getAttribute('data-id');
-            const ids = [
-                parent_bar_id,
-                ...this.get_all_dependent_tasks(parent_bar_id),
-            ];
-            bars = ids.map((id) => {
-                const bar = this.get_bar(id);
-                if (parent_bar_id === id) {
-                    this.bar_being_dragged = bar;
+                if (element.classList.contains('.bar-connector')) {
+                    // see bind_bar_connect_events()
+                    return;
                 }
-                const $bar = bar.$bar;
-                $bar.ox = $bar.getX();
-                $bar.oy = $bar.getY();
-                $bar.owidth = $bar.getWidth();
-                $bar.finalx = $bar.ox;
-                $bar.finaly = $bar.oy;
-                $bar.finalw = $bar.owidth;
-                return bar;
-            });
-        });
+                if (element.classList.contains('left')) {
+                    is_resizing_left = true;
+                } else if (element.classList.contains('right')) {
+                    is_resizing_right = true;
+                } else if (element.classList.contains('bar-wrapper')) {
+                    is_dragging = true;
+                }
+
+                bar_wrapper.classList.add('active');
+
+                x_on_start = e.offsetX;
+                y_on_start = e.offsetY;
+
+                parent_bar_id = bar_wrapper.getAttribute('data-id');
+                const ids = [
+                    parent_bar_id,
+                    ...this.get_all_dependent_tasks(parent_bar_id),
+                ];
+                bars = ids.map((id) => {
+                    const bar = this.get_bar(id);
+                    if (parent_bar_id === id) {
+                        this.bar_being_dragged = bar;
+                    }
+                    const $bar = bar.$bar;
+                    $bar.ox = $bar.getX();
+                    $bar.oy = $bar.getY();
+                    $bar.owidth = $bar.getWidth();
+                    $bar.finalx = $bar.ox;
+                    $bar.finaly = $bar.oy;
+                    $bar.finalw = $bar.owidth;
+                    return bar;
+                });
+            }
+        );
 
         $.on(this.$svg, 'mousemove', (e) => {
             if (!action_in_progress()) return;
@@ -969,6 +963,7 @@ export default class Gantt {
 
         this.bind_bar_del_event();
         this.bind_bar_progress();
+        this.bind_bar_connect_events();
     }
 
     update_gantt_dates() {
@@ -1000,6 +995,72 @@ export default class Gantt {
                     this.remove_active_bars();
                 }
             }
+        });
+    }
+
+    get_bar_from_element(el) {
+        if (!el) {
+            return null;
+        }
+        const $bar_wrapper = $.closest('.bar-wrapper', el);
+        if (!$bar_wrapper) {
+            return null;
+        }
+        const task_id = $bar_wrapper.getAttribute('data-id');
+        const bar = this.get_bar(task_id);
+        if (!bar) {
+            return null;
+        }
+        return bar;
+    }
+
+    bind_bar_connect_events() {
+        let is_connecting = false;
+        let arrow = null;
+
+        $.on(this.$svg, 'mousedown', '.bar-connector', (e, el) => {
+            const bar = this.get_bar_from_element(el);
+            if (!bar) {
+                return;
+            }
+            is_connecting = true;
+            arrow = Arrow.create_with_end_xy(this, bar, e.offsetX, e.offsetY);
+            arrow.group.classList.add('connecting');
+            this.layers.arrow.appendChild(arrow.group);
+        });
+
+        $.on(this.$svg, 'mousemove', (e) => {
+            if (!is_connecting) {
+                return;
+            }
+            const $hover_el = document.elementFromPoint(e.clientX, e.clientY);
+            const to_task_bar = this.get_bar_from_element($hover_el);
+            if (to_task_bar) {
+                arrow.update_to_task(to_task_bar);
+            } else {
+                arrow.update_end_xy(e.offsetX, e.offsetY);
+            }
+        });
+
+        $.on(this.$svg, 'mouseup', (e) => {
+            if (!is_connecting) {
+                return;
+            }
+            is_connecting = false;
+            if (!arrow) {
+                return;
+            }
+            if (
+                arrow.to_task &&
+                arrow.to_task.task.dependencies.indexOf(
+                    arrow.from_task.task.id
+                ) < 0
+            ) {
+                arrow.to_task.task.dependencies.push(arrow.from_task.task.id);
+                this.refresh_arrows();
+            }
+            arrow.group.remove();
+            arrow = null;
         });
     }
 
