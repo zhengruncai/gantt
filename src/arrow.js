@@ -1,4 +1,4 @@
-import { $, createSVG } from './svg_utils';
+import { $, createSVG } from './html_utils';
 
 export default class Arrow {
     constructor(opts) {

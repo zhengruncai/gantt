@@ -4,6 +4,32 @@ export function $(expr, con) {
         : expr || null;
 }
 
+export function encodeHTML(str) {
+    if (!str) {
+        return '';
+    }
+    const res = [];
+    for (let i = 0; i < str.length; ++i) {
+        res.push(`&#${str.charCodeAt(i)};`);
+    }
+    return res.join('');
+}
+
+export function createElem(tag, attrs) {
+    const elem = document.createElement(tag);
+    for (let attr in attrs) {
+        if (attr === 'append_to') {
+            const parent = attrs.append_to;
+            if (parent) {
+                parent.appendChild(elem);
+            }
+        } else {
+            elem.setAttribute(attr, attrs[attr]);
+        }
+    }
+    return elem;
+}
+
 export function createSVG(tag, attrs) {
     const elem = document.createElementNS('http://www.w3.org/2000/svg', tag);
     for (let attr in attrs) {

@@ -1,3 +1,5 @@
+import { encodeHTML } from './html_utils';
+
 export default class Popup {
     constructor(parent, custom_html) {
         this.parent = parent;
@@ -35,8 +37,8 @@ export default class Popup {
             this.pointer = this.parent.querySelector('.pointer');
         } else {
             // set data
-            this.title.innerHTML = options.title;
-            this.subtitle.innerHTML = options.subtitle;
+            this.title.innerHTML = encodeHTML(options.title);
+            this.subtitle.innerHTML = encodeHTML(options.subtitle);
             this.parent.style.width = this.parent.clientWidth + 'px';
         }
 

@@ -1,5 +1,5 @@
 import date_utils from './date_utils';
-import { $, createSVG, animateSVG } from './svg_utils';
+import { $, encodeHTML, createElem, createSVG, animateSVG } from './html_utils';
 
 export default class Bar {
     constructor(gantt, task) {
@@ -111,10 +111,10 @@ export default class Bar {
     }
 
     draw_label() {
-        createSVG('text', {
+        this.$text = createSVG('text', {
             x: this.x + this.width / 2,
             y: this.y + this.height / 2,
-            innerHTML: this.task.name,
+            innerHTML: encodeHTML(this.task.name),
             class: 'bar-label',
             append_to: this.bar_group,
         });
@@ -188,7 +188,7 @@ export default class Bar {
     }
 
     setup_click_event() {
-        $.on(this.group, 'focus ' + this.gantt.options.popup_trigger, (e) => {
+        $.on(this.group, '' + this.gantt.options.popup_trigger, (e) => {
             if (this.action_completed) {
                 // just finished a move action, wait for a few seconds
                 return;
@@ -205,7 +205,7 @@ export default class Bar {
                 return;
             }
 
-            this.gantt.trigger_event('click', [this.task]);
+            this.show_input();
         });
     }
 
@@ -330,28 +330,6 @@ export default class Bar {
         );
     }
 
-    get_snap_x(ox) {
-        const VIEW_MODE = this.gantt.constructor.VIEW_MODE;
-        let min_dx = this.gantt.options.column_width;
-        if (this.gantt.view_is(VIEW_MODE.WEEK)) {
-            min_dx = this.gantt.options.column_width / 7;
-        } else if (this.gantt.view_is(VIEW_MODE.MONTH)) {
-            min_dx = this.gantt.options.column_width / 30;
-        }
-        return ox - (ox % min_dx);
-    }
-
-    get_snap_end_x(ox) {
-        const VIEW_MODE = this.gantt.constructor.VIEW_MODE;
-        let min_dx = this.gantt.options.column_width;
-        if (this.gantt.view_is(VIEW_MODE.WEEK)) {
-            min_dx = this.gantt.options.column_width / 7;
-        } else if (this.gantt.view_is(VIEW_MODE.MONTH)) {
-            min_dx = this.gantt.options.column_width / 30;
-        }
-        return ox - (ox % min_dx) + min_dx - 1;
-    }
-
     update_attr(element, attr, value) {
         value = +value;
         if (!isNaN(value)) {
@@ -413,6 +391,41 @@ export default class Bar {
         for (let arrow of this.arrows) {
             arrow.update();
         }
+    }
+
+    show_input() {
+        this.$text.classList.add('hide');
+
+        this.$input = createElem('input', {
+            append_to: this.gantt.$container,
+            class: 'bar-input',
+            value: this.task.name,
+        });
+        this.$input.style['line-height'] = this.height - 2 + 'px';
+        this.$input.padding = '0px 5px';
+        this.$input.style.left = this.$bar.getX() + 10 + 'px';
+        this.$input.style.top = this.$bar.getY() + 1 + 'px';
+
+        this.$input.focus();
+
+        $.bind(this.$input, 'blur keyup', (e) => {
+            if (e.type === 'blur' || e.key === 'Enter') {
+                this.hide_input();
+            }
+        });
+    }
+
+    hide_input() {
+        if (!this.$input) {
+            return;
+        }
+        const $input = this.$input;
+        this.$input = null;
+        this.task.name = $input.value;
+        this.$text.innerHTML = encodeHTML(this.task.name);
+        this.$text.classList.remove('hide');
+        $input.remove();
+        this.update_label_position();
     }
 }
 
