@@ -188,7 +188,7 @@ export default class Bar {
     }
 
     setup_click_event() {
-        $.on(this.group, '' + this.gantt.options.popup_trigger, (e) => {
+        $.on(this.group, 'focus ' + this.gantt.options.popup_trigger, (e) => {
             if (this.action_completed) {
                 // just finished a move action, wait for a few seconds
                 return;
@@ -196,7 +196,9 @@ export default class Bar {
 
             this.show_popup();
             this.gantt.unselect_all();
-            this.group.classList.add('active');
+            setTimeout(() => {
+                this.group.classList.add('active');
+            }, 5);
         });
 
         $.on(this.group, 'dblclick', (e) => {

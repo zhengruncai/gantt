@@ -196,7 +196,9 @@ export default class Arrow {
     setup_active_event() {
         $.on(this.group, 'focus click', (e) => {
             this.gantt.unselect_all();
-            this.group.classList.add('active');
+            setTimeout(() => {
+                this.group.classList.add('active');
+            }, 5);
         });
     }
 

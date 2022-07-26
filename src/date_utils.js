@@ -6,6 +6,11 @@ const MINUTE = 'minute';
 const SECOND = 'second';
 const MILLISECOND = 'millisecond';
 
+const day_of_week_names = {
+    en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    zh: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
+};
+
 const month_names = {
     en: [
         'January',
@@ -171,6 +176,7 @@ export default {
             ss: values[5],
             SSS: values[6],
             D: values[2],
+            ddd: day_of_week_names[lang][date.getDay()],
             MMMM: month_names[lang][+values[1]],
             MMM: month_names[lang][+values[1]],
         };

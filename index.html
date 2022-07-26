@@ -1,107 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Simple Gantt</title>
-	<style>
-		body {
-			font-family: sans-serif;
-			background: #ccc;
-		}
-		.container {
-			width: 80%;
-			margin: 0 auto;
-		}
-		/* custom class */
-		.gantt .bar-milestone .bar {
-			fill: tomato;
-		}
-	</style>
-	<link rel="stylesheet" href="dist/frappe-gantt.css" />
-	<script src="dist/frappe-gantt.js"></script>
-</head>
-<body>
-	<div class="container">
-		<h2>Interactive Gantt Chart entirely made in SVG!</h2>
-		<div class="gantt-target"></div>
-	</div>
-	<script>
-		var tasks = [
-			{
-				start: '2022-06-01',
-				end: '2022-06-08',
-				name: 'Redesign website',
-				id: "Task 0",
-				progress: 20,
-			},
-			{
-				start: '2022-06-03',
-				end: '2022-06-07',
-				name: 'Write new content',
-				id: "Task 1",
-				progress: 5,
-				dependencies: 'Task 0'
-			},
-			{
-				start: '2022-06-04',
-				end: '2022-06-08',
-				name: 'Apply new styles',
-				id: "Task 2",
-				progress: 10,
-				dependencies: 'Task 1'
-			},
-			{
-				start: '2022-06-08',
-				end: '2022-06-14',
-				name: 'Review',
-				id: "Task 3",
-				progress: 5,
-				dependencies: 'Task 2'
-			},
-			{
-				start: '2022-06-10',
-				end: '2022-06-16',
-				name: 'Deploy',
-				id: "Task 4",
-				progress: 0,
-				dependencies: 'Task 3,Task 2'
-			},
-			{
-				start: '2022-06-13',
-				end: '2022-06-16',
-				name: 'Go Live!',
-				id: "Task 5",
-				progress: 0,
-				dependencies: 'Task 4',
-				custom_class: 'bar-milestone'
-			},
-			{
-				start: '2022-06-03',
-				end: '2022-06-20',
-				name: 'Long term task',
-				id: "Task 6",
-				invalid: true,
-				progress: 5
-			}
-		]
-		var gantt_chart = new Gantt(".gantt-target", tasks, {
-			on_click: function (task) {
-				console.log(task);
-			},
-			on_date_change: function(task, start, end) {
-				console.log(task, start, end);
-			},
-			on_progress_change: function(task, progress) {
-				console.log(task, progress);
-			},
-			on_view_change: function(mode) {
-				console.log(mode);
-			},
-			view_mode: Gantt.VIEW_MODE.DAY,
-			language: 'en',
-			sortable: true,
-		});
-		console.log(gantt_chart);
-	</script>
-</body>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Simple Gantt</title>
+        <style>
+            body {
+                font-family: sans-serif;
+                background: #ccc;
+            }
+            .container {
+                width: 80%;
+                margin: 0 auto;
+            }
+            /* custom class */
+            .gantt .bar-milestone .bar {
+                fill: tomato;
+            }
+        </style>
+        <link rel="stylesheet" href="dist/frappe-gantt.css" />
+        <script src="dist/frappe-gantt.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <h2>Interactive Gantt Chart entirely made in SVG!</h2>
+            <div class="gantt-target"></div>
+        </div>
+        <script>
+            const date_utils = Gantt.date_utils;
+            const today = new Date();
+            var tasks = [
+                {
+                    start: date_utils.add(today, -20, 'day'),
+                    end: date_utils.add(today, -18, 'day'),
+                    name: 'Redesign website',
+                    id: 'Task 0',
+                    progress: 20,
+                },
+                {
+                    start: date_utils.add(today, -18, 'day'),
+                    end: date_utils.add(today, -13, 'day'),
+                    name: 'Write new content',
+                    id: 'Task 1',
+                    progress: 5,
+                    dependencies: 'Task 0',
+                },
+                {
+                    start: date_utils.add(today, -16, 'day'),
+                    end: date_utils.add(today, -12, 'day'),
+                    name: 'Apply new styles',
+                    id: 'Task 2',
+                    progress: 10,
+                    dependencies: 'Task 1',
+                },
+                {
+                    start: date_utils.add(today, -12, 'day'),
+                    end: date_utils.add(today, -6, 'day'),
+                    name: 'Review',
+                    id: 'Task 3',
+                    progress: 5,
+                    dependencies: 'Task 2',
+                },
+                {
+                    start: date_utils.add(today, -10, 'day'),
+                    end: date_utils.add(today, -4, 'day'),
+                    name: 'Deploy',
+                    id: 'Task 4',
+                    progress: 0,
+                    dependencies: 'Task 3,Task 2',
+                },
+                {
+                    start: date_utils.add(today, -6, 'day'),
+                    end: date_utils.add(today, -4, 'day'),
+                    name: 'Go Live!',
+                    id: 'Task 5',
+                    progress: 0,
+                    dependencies: 'Task 4',
+                    custom_class: 'bar-milestone',
+                },
+                {
+                    start: date_utils.add(today, -17, 'day'),
+                    end: date_utils.add(today, -5, 'day'),
+                    name: 'Long term task',
+                    id: 'Task 6',
+                    invalid: true,
+                    progress: 5,
+                },
+            ];
+            var gantt_chart = new Gantt('.gantt-target', tasks, {
+                on_click: function (task) {
+                    console.log(task);
+                },
+                on_date_change: function (task, start, end) {
+                    console.log(task, start, end);
+                },
+                on_progress_change: function (task, progress) {
+                    console.log(task, progress);
+                },
+                on_view_change: function (mode) {
+                    console.log(mode);
+                },
+                view_mode: Gantt.VIEW_MODE.DAY,
+                language: 'en',
+                sortable: true,
+                special_days: [{ date: new Date(2022, 6, 23), is_holiday: 0, memo: '七夕bu班' },{ date: new Date(2022, 6, 25), is_holiday: 1, memo: '七夕放假啊' }],
+            });
+            console.log(gantt_chart);
+        </script>
+    </body>
 </html>
