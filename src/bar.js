@@ -270,7 +270,7 @@ export default class Bar {
         this.gantt.trigger_event('date_change', [
             this.task,
             new_start_date,
-            date_utils.add(new_end_date, -1, 'second'),
+            new_end_date,
         ]);
     }
 
@@ -296,8 +296,8 @@ export default class Bar {
         const width_in_units = bar.getWidth() / this.gantt.options.column_width;
         const new_end_date = date_utils.add(
             new_start_date,
-            width_in_units * this.gantt.options.step,
-            'hour'
+            width_in_units * this.gantt.options.step * 3600,
+            'second'
         );
 
         return { new_start_date, new_end_date };

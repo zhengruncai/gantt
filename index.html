@@ -27,7 +27,7 @@
         </div>
         <script>
             const date_utils = Gantt.date_utils;
-            const today = new Date();
+            const today = date_utils.start_of(new Date(), 'day');
             var tasks = [
                 {
                     start: date_utils.add(today, -20, 'day'),

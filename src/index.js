@@ -595,7 +595,11 @@ export default class Gantt {
                     : '',
             Day_upper:
                 date.getMonth() !== last_date.getMonth()
-                    ? date_utils.format(date, 'MMMM', this.options.language)
+                    ? date_utils.format(
+                          date,
+                          'YYYY MMMM',
+                          this.options.language
+                      )
                     : '',
             Week_upper:
                 date.getMonth() !== last_date.getMonth()
@@ -840,7 +844,7 @@ export default class Gantt {
                                     elem &&
                                     elem.matches &&
                                     elem.matches(
-                                        '.grid-row,.grid-day,.row-line,.tick'
+                                        '.grid-row,.grid-day,.row-line,.tick,.grid-header,.lower-text,.upper-text'
                                     )
                                 );
                             },
@@ -1342,7 +1346,9 @@ export default class Gantt {
         } else if (this.view_is(VIEW_MODE.MONTH)) {
             min_dx = this.options.column_width / 30;
         }
-        return ox - (ox % min_dx) + min_dx - 1;
+        const width_of_sec =
+            this.options.column_width / this.options.step / 3600;
+        return ox - (ox % min_dx) + min_dx - width_of_sec;
     }
 
     compute_dates_for_new_task(x) {
@@ -1352,14 +1358,21 @@ export default class Gantt {
             (final_x / this.options.column_width) * this.options.step,
             'hour'
         );
-        const end = date_utils.add(start, this.options.step * 3, 'hour');
+        const end = date_utils.add(
+            start,
+            this.options.step * 3 * 3600 - 1,
+            'second'
+        );
         return { start, end };
     }
 
     compute_index_for_new_task(y) {
-        return Math.floor(
-            (y - this.options.header_height - this.options.padding) /
-                (this.options.bar_height + this.options.padding)
+        return Math.max(
+            0,
+            Math.floor(
+                (y - this.options.header_height - this.options.padding) /
+                    (this.options.bar_height + this.options.padding)
+            )
         );
     }
 
@@ -1379,12 +1392,12 @@ export default class Gantt {
         const tasks = [];
         let idx = 0;
         this.tasks.forEach((task) => {
-            tasks.push(task);
-            task._index = idx++;
             if (idx === new_task._index) {
                 tasks.push(new_task);
                 idx++;
             }
+            tasks.push(task);
+            task._index = idx++;
         });
         this.tasks = tasks;
         this.setup_dependencies();
