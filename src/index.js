@@ -90,6 +90,8 @@ export default class Gantt {
             custom_popup_html: null,
             language: 'en',
             sortable: false,
+            drag_enabled: true,
+            resize_enabled: true,
         };
         this.options = Object.assign({}, default_options, options);
 
@@ -964,11 +966,20 @@ export default class Gantt {
                     // see bind_bar_connect_events()
                     return;
                 }
-                if (element.classList.contains('left')) {
+                if (
+                    element.classList.contains('left') &&
+                    this.options.resize_enabled
+                ) {
                     is_resizing_left = true;
-                } else if (element.classList.contains('right')) {
+                } else if (
+                    element.classList.contains('right') &&
+                    this.options.resize_enabled
+                ) {
                     is_resizing_right = true;
-                } else if (element.classList.contains('bar-wrapper')) {
+                } else if (
+                    element.classList.contains('bar-wrapper') &&
+                    this.options.drag_enabled
+                ) {
                     is_dragging = true;
                 }
 
