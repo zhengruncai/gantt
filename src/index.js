@@ -90,6 +90,7 @@ export default class Gantt {
             custom_popup_html: null,
             language: 'en',
             sortable: false,
+            drag_enabled: true,
         };
         this.options = Object.assign({}, default_options, options);
 
@@ -968,7 +969,10 @@ export default class Gantt {
                     is_resizing_left = true;
                 } else if (element.classList.contains('right')) {
                     is_resizing_right = true;
-                } else if (element.classList.contains('bar-wrapper')) {
+                } else if (
+                    element.classList.contains('bar-wrapper') &&
+                    this.options.drag_enabled
+                ) {
                     is_dragging = true;
                 }
 
