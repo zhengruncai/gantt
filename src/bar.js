@@ -111,6 +111,9 @@ export default class Bar {
     }
 
     draw_label() {
+        if (!this.task.show_label) {
+            return;
+        }
         this.$text = createSVG('text', {
             x: this.x + this.width / 2,
             y: this.y + this.height / 2,
@@ -353,15 +356,16 @@ export default class Bar {
     update_label_position() {
         const bar = this.$bar,
             label = this.group.querySelector('.bar-label');
-
-        if (label.getBBox().width > bar.getWidth()) {
-            label.classList.add('big');
-            label.setAttribute('x', bar.getX() + bar.getWidth() + 5);
-        } else {
-            label.classList.remove('big');
-            label.setAttribute('x', bar.getX() + bar.getWidth() / 2);
+        if (label) {
+            if (label.getBBox().width > bar.getWidth()) {
+                label.classList.add('big');
+                label.setAttribute('x', bar.getX() + bar.getWidth() + 5);
+            } else {
+                label.classList.remove('big');
+                label.setAttribute('x', bar.getX() + bar.getWidth() / 2);
+            }
+            label.setAttribute('y', bar.getY() + bar.getHeight() / 2);
         }
-        label.setAttribute('y', bar.getY() + bar.getHeight() / 2);
     }
 
     update_handle_position() {

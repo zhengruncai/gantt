@@ -165,6 +165,11 @@ export default class Gantt {
                 task.id = generate_id(task);
             }
 
+            // show label
+            if (typeof task.show_label === 'undefined') {
+                task.show_label = true;
+            }
+
             return task;
         });
 
