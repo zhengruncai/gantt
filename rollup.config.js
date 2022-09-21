@@ -15,6 +15,22 @@ const dev = {
         }),
     ],
 };
+
+const umd = {
+    input: 'src/index.js',
+    output: {
+        name: 'Gantt',
+        file: 'dist/frappe-gantt.umd.js',
+        sourcemap: true,
+        format: 'umd',
+    },
+    plugins: [
+        sass({
+            output: true,
+        }),
+    ],
+};
+
 const prod = {
     input: 'src/index.js',
     output: {
@@ -34,4 +50,4 @@ const prod = {
     ],
 };
 
-export default [dev, prod];
+export default [dev, umd, prod];
